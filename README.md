@@ -22,5 +22,6 @@ As you can see, the tokens have a type and value, for example, the first token f
 This is to have some kind of abstraction, because while we are parsing using a specific grammar, the most important thing to us is the type of the lexems/tokens — not the values– and the order they came in.
 Syntax analysis / Parsing: scanning the stream of tokens according to a specific grammar and then deciding what to do with them (generating abstract syntax tree). https://en.wikipedia.org/wiki/Abstract_syntax_tree
 
-
+The execution:
+What we are basically given in the execution part is an AST, and the way we will execute it is by traversing it recursively.
 
