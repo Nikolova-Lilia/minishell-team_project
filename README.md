@@ -10,8 +10,6 @@ The way bash parses commands, it basically goes through two phases, the lexical 
 Lexical analysis / tokenization: taking the input from the user and processing it char by char into “tokens”.
 For example, let’s say we are building a calculator program and we have 1 + 2 as input, we can convert this input to a stream of tokens similar to the following:
 ![image](https://github.com/Nikolova-Lilia/minishell-team_project/assets/147531481/f8f0c3f8-2283-40eb-89e6-80e386d8e7fe)
-![image](https://github.com/Nikolova-Lilia/minishell-team_project/assets/147531481/f8f0c3f8-2283-40eb-89e6-80e386d8e7fe)
-![image](https://github.com/Nikolova-Lilia/minishell-team_project/assets/147531481/f8f0c3f8-2283-40eb-89e6-80e386d8e7fe)
 
 A graphical representation of tokens
 As you can see, the tokens have a type and value, for example, the first token from the left is of type NUMBER and has a value of 1.
