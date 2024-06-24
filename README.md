@@ -18,7 +18,7 @@ For example, let’s say we are building a calculator program and we have 1 + 2 
 
 A graphical representation of tokens
 
-As you can see, the tokens have a type and value, for example, the first token from the left is of type NUMBER and has a value of 1.
+The tokens have a type and value, for example, the first token from the left is of type NUMBER and has a value of 1.
 This is to have some kind of abstraction, because while we are parsing using a specific grammar, the most important thing to us is the type of the lexems/tokens — not the values– and the order they came in.
 Syntax analysis / Parsing: scanning the stream of tokens according to a specific grammar and then deciding what to do with them (generating abstract syntax tree). https://en.wikipedia.org/wiki/Abstract_syntax_tree
 
