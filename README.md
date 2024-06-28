@@ -25,3 +25,5 @@ Syntax analysis / Parsing: scanning the stream of tokens according to a specific
 The execution:
 What we are basically given in the execution part is an AST, and the way we will execute it is by traversing it recursively.
 
+A few of the functions are "built-in", meaning we don't call the executable, we re-coded them directly. It's the case for echo, pwd, cd, env, export, unset and exit.
+
