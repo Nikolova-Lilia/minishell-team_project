@@ -43,7 +43,7 @@ int ft_check_joins(t_token *tokens, int size);
 int ft_run_shell(t_token *tokens, int size);
 int ft_run_command(t_token *tokens, int size);
 int ft_exec(t_token *tokens, int size);
-int ft_strncmp(const char *s1, const char *s2);
+int ft_strcmp(const char *s1, const char *s2);
 
 char *ft_join_tokens(t_token *tokens, int size);
 char *ft_collect_input(char *end);
@@ -54,7 +54,7 @@ char *ft_strjoin(char *str1, char *str2);
 void ft_strcpy(char *dest, char *src);
 
 
-int ft_strncmp(const char *s1, const char *s2)
+int ft_strcmp(const char *s1, const char *s2)
 {
     size_t i;
 
@@ -312,7 +312,7 @@ char *ft_collect_input(char *end)
 	char *line;
 	// todo: read line
 
-	while (ft_strncmp(line, end) != 0)
+	while (ft_strcmp(line, end) != 0)
 	{
 		char *new_input;
 
@@ -417,7 +417,7 @@ int ft_run_shell(t_token *tokens, int size)
 
 int ft_run_command(t_token *tokens, int size)
 {
-    if (ft_strncmp(tokens[0].str, "echo") == 0)
+    if (ft_strcmp(tokens[0].str, "echo") == 0)
         return ft_echo(tokens, size);
 
 	return ft_run_shell(tokens, size);
