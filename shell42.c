@@ -29,6 +29,8 @@ typedef struct s_token
 } t_token;
 
 int ft_echo(t_token *args, int size);
+int ft_cd(t_token *args, int size);
+int ft_pwd(void);
 int ft_find_closing_brace(t_token *tokens, int size);
 int ft_and_if(t_token *tokens, int size, int i);
 int ft_or_if(t_token *tokens, int size, int i);
@@ -92,6 +94,52 @@ int ft_echo(t_token *args, int size)
     return 1;
 }
 
+int ft_cd(t_token *tokens, int size)
+{
+    static char olddir[256];
+    char curdir[256];
+
+    if (ft_strcmp(tokens[1].str, "-") == 0 && !olddir[0])
+    {
+        ft_putstr_fd("bash: cd: No such file or directory\n", 1);
+        return 0;
+    }
+       
+    if (getcwd(curdir, sizeof(curdir)) == NULL)
+    {
+        perror("getcwd() error");
+        return 0;
+    }
+
+    if (ft_strcmp(tokens[1].str, "-") == 0)
+        chdir(olddir);
+    else if (size == 1)
+        chdir(getenv("HOME"));
+    else
+        chdir(tokens[1].str);
+
+    ft_strcpy(olddir, curdir);
+    return (1);
+}
+
+int ft_pwd(void)
+{
+    char cwd[256];
+
+    if (getcwd(cwd, sizeof(cwd)) == NULL)
+    {
+        perror("getcwd() error");
+        return 0;
+    }
+    else
+    {
+        ft_putstr_fd(cwd, 1);
+        ft_putstr_fd("\n", 1);
+    }
+
+    return (1);
+}
+
 int ft_check_n(char *str)
 {
     if (str[0] == '-' && str[1] == 'n')
@@ -121,6 +169,8 @@ char *ft_strjoin(char *str1, char *str2)
     int len2 = ft_strlen(str2);
 
     char *strjoin = malloc(len1 + len2 + 1);
+    if (!strjoin)
+    	return (NULL);
     ft_strcpy(strjoin, str1);
     ft_strcpy(strjoin + len1, str2);
     return strjoin;
@@ -149,7 +199,6 @@ int ft_find_closing_brace(t_token *tokens, int size)
 
 	i = 0;
 	c = 0;
-
 	while (i < size)
 	{
 		if (tokens[i].type == LPARA)
@@ -158,7 +207,7 @@ int ft_find_closing_brace(t_token *tokens, int size)
 			c--;
 
 		if (c == 0)
-			return i;
+			return (i);
 	}
 }
 
@@ -288,7 +337,9 @@ char *ft_join_tokens(t_token *tokens, int size)
 	int i;
 	char *end;
 
-	end = malloc(1 * sizeof(char));
+	end = (char *)malloc(1 * sizeof(char));
+	if (!end)
+		return (NULL);
 	end[0] = '\0';
 	i = 0;
 	while (i < size)
@@ -299,7 +350,7 @@ char *ft_join_tokens(t_token *tokens, int size)
 		i++;
 	}
 
-	return end;
+	return (end);
 }
 
 char *ft_collect_input(char *end)
@@ -420,6 +471,12 @@ int ft_run_command(t_token *tokens, int size)
     if (ft_strcmp(tokens[0].str, "echo") == 0)
         return ft_echo(tokens, size);
 
+    if (ft_strcmp(tokens[0].str, "cd") == 0)
+        return ft_cd(tokens, size);
+
+    if (ft_strcmp(tokens[0].str, "pwd") == 0)
+        return ft_pwd();
+
 	return ft_run_shell(tokens, size);
 }
 
@@ -446,44 +503,90 @@ int main(void)
 {
     t_token token1;
     token1.type = WORD;
-    token1.str = "echo";
-    t_token token_n;
-    token_n.type = WORD;
-    token_n.str = "-n";
+    token1.str = "cd";
     t_token token2;
     token2.type = WORD;
-    token2.str = "hello ";
+    token2.str = "..";
     t_token token3;
     token3.type = AND_IF;
     t_token token4;
     token4.type = WORD;
-    token4.str = "echo";
+    token4.str = "pwd";
     t_token token5;
-    token5.type = WORD;
-    token5.str = "world";
+    token5.type = AND_IF;
     t_token token6;
-    token6.type = AND_IF;
+    token6.type = WORD;
+    token6.str = "cd";
     t_token token7;
     token7.type = WORD;
-    token7.str = "ls";
+    token7.str = "-";
     t_token token8;
-    token8.type = GREAT;
+    token8.type = AND_IF;
     t_token token9;
     token9.type = WORD;
-    token9.str = "file.txt";
+    token9.str = "pwd";
     t_token token10;
     token10.type = AND_IF;
     t_token token11;
     token11.type = WORD;
-    token11.str = "ls";
+    token11.str = "cd";
     t_token token12;
-    token12.type = PIPE;
+    token12.type = WORD;
+    token12.str = "-";
     t_token token13;
-    token13.type = WORD;
-    token13.str = "wc";
+    token13.type = AND_IF;
+    t_token token14;
+    token14.type = WORD;
+    token14.str = "pwd";
 
-    t_token tokens[] = {token1, token_n, token2, token3, token4, token5, token6, token7, token8, token9, token10, token11, token12, token13};
+    t_token tokens[] = { token1, token2, token3, token4, token5, token6, token7, token8, token9, token10, token11, token12, token13, token14 };
 
     ft_exec(tokens, 14);
     return (0);
 }
+
+// int main(void)
+// {
+//     t_token token1;
+//     token1.type = WORD;
+//     token1.str = "echo";
+//     t_token token_n;
+//     token_n.type = WORD;
+//     token_n.str = "-n";
+//     t_token token2;
+//     token2.type = WORD;
+//     token2.str = "hello ";
+//     t_token token3;
+//     token3.type = AND_IF;
+//     t_token token4;
+//     token4.type = WORD;
+//     token4.str = "echo";
+//     t_token token5;
+//     token5.type = WORD;
+//     token5.str = "world";
+//     t_token token6;
+//     token6.type = AND_IF;
+//     t_token token7;
+//     token7.type = WORD;
+//     token7.str = "ls";
+//     t_token token8;
+//     token8.type = GREAT;
+//     t_token token9;
+//     token9.type = WORD;
+//     token9.str = "file.txt";
+//     t_token token10;
+//     token10.type = AND_IF;
+//     t_token token11;
+//     token11.type = WORD;
+//     token11.str = "ls";
+//     t_token token12;
+//     token12.type = PIPE;
+//     t_token token13;
+//     token13.type = WORD;
+//     token13.str = "wc";
+
+//     t_token tokens[] = {token1, token_n, token2, token3, token4, token5, token6, token7, token8, token9, token10, token11, token12, token13};
+
+//     ft_exec(tokens, 14);
+//     return (0);
+// }
