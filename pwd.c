@@ -28,14 +28,9 @@ int ft_pwd(void);
 static size_t ft_strlen(const char *str); //libft function
 static void ft_putstr_fd(char *s, int fd); //libft fuunction
 
-int main(void)
-{
-    ft_pwd();
-    printf("ok\n");
-}
-
 //write a check to see if the space is enough, if no include realloc(maybe not necessary for the scope of this project)
 // https://www.ibm.com/docs/en/zos/2.4.0?topic=functions-getcwd-get-path-name-working-directory
+
 int ft_pwd(void)
 {
     char cwd[256];
@@ -49,7 +44,7 @@ int ft_pwd(void)
     }
 }
 
-static size_t ft_strlen(const char *str)
+static size_t ft_strlen(const char *str) //libft function
 {
     unsigned int i;
 
@@ -61,9 +56,15 @@ static size_t ft_strlen(const char *str)
     return ((size_t)i);
 }
 
-static void ft_putstr_fd(char *s, int fd)
+static void ft_putstr_fd(char *s, int fd) //libft function
 {
     if (!s)
         return;
     write(fd, s, ft_strlen(s));
 }
+/*
+int main(void)
+{
+    ft_pwd();
+    printf("ok\n");
+}*/

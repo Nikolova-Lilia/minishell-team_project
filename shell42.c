@@ -28,23 +28,37 @@ typedef struct s_token
     char *str;
 } t_token;
 
-int ft_echo(t_token *args, int size);
-int ft_cd(t_token *args, int size);
+typedef struct s_list
+{
+    void *content;
+    t_list *next;
+} t_list;
+
+typedef struct s_env
+{
+    char *key;
+    char *value;
+} t_env;
+
+int ft_echo(t_token *args, int size, t_list **env);
+int ft_cd(t_token *args, int size, t_list **env);
 int ft_pwd(void);
+int ft_env(t_list **env);
+// TODO: function to evaluate environment variables
 int ft_find_closing_brace(t_token *tokens, int size);
-int ft_and_if(t_token *tokens, int size, int i);
-int ft_or_if(t_token *tokens, int size, int i);
-int ft_pipe_exec(t_token *tokens, int size, int fd, int p1, int p2);
-int ft_pipe(t_token *tokens, int size, int i);
-int ft_great(t_token *tokens, int size, int i);
-int ft_dgreat(t_token *tokens, int size, int i);
-int ft_less(t_token *tokens, int size, int i);
-int ft_dless(t_token *tokens, int size, int i);
-int ft_check_operators(t_token *tokens, int size);
-int ft_check_joins(t_token *tokens, int size);
-int ft_run_shell(t_token *tokens, int size);
-int ft_run_command(t_token *tokens, int size);
-int ft_exec(t_token *tokens, int size);
+int ft_and_if(t_token *tokens, int size, int i, t_list **env);
+int ft_or_if(t_token *tokens, int size, int i, t_list **env);
+int ft_pipe_exec(t_token *tokens, int size, int fd, int* pipe, t_list **env);
+int ft_pipe(t_token *tokens, int size, int i, t_list **env);
+int ft_great(t_token *tokens, int size, int i, t_list **env);
+int ft_dgreat(t_token *tokens, int size, int i, t_list **env);
+int ft_less(t_token *tokens, int size, int i, t_list **env);
+int ft_dless(t_token *tokens, int size, int i, t_list **env);
+int ft_check_operators(t_token *tokens, int size, t_list **env);
+int ft_check_joins(t_token *tokens, int size, t_list **env);
+int ft_run_shell(t_token *tokens, int size, t_list **env);
+int ft_run_command(t_token *tokens, int size, t_list **env);
+int ft_exec(t_token *tokens, int size, t_list **env);
 int ft_strcmp(const char *s1, const char *s2);
 
 char *ft_join_tokens(t_token *tokens, int size);
@@ -54,7 +68,248 @@ size_t ft_strlen(const char *str);
 void ft_putstr_fd(char *s, int fd);
 char *ft_strjoin(char *str1, char *str2);
 void ft_strcpy(char *dest, char *src);
+void ft_add_env(char* strtod, t_list **env);
+void ft_remove_env(char* key, t_list **env);
+static size_t	ft_strcount(char const *s, char c);
+static size_t	ft_array_sorting(char const *s, char c);
+static char	**ft_dealloc(char **str, int i);
+static int	ft_check_null(size_t len, char const *s);
+char	**ft_split(char const *s, char c);
+size_t	ft_strlcpy(char *dst, const char *src, size_t size);
+void	ft_lstadd_back(t_list **lst, t_list *new);
+void	ft_lstclear(t_list **lst, void (*del)(void *));
+void	ft_lstdelone(t_list *lst, void (*del)(void *));
+t_list	*ft_lstlast(t_list *lst);
+t_list	*ft_lstnew(void *content);
+void ft_del_env(t_env *env);
+t_env *ft_find_env(char *key, t_list **env);
 
+t_list	*ft_lstnew(void *content)
+{
+	t_list	*node;
+
+	node = malloc(sizeof(t_list) * 1);
+	if (!node)
+		return (NULL);
+	node->content = content;
+	node->next = NULL;
+	return (node);
+}
+
+t_list	*ft_lstlast(t_list *lst)
+{
+	while (lst != NULL && lst->next != NULL)
+	{
+		lst = lst->next;
+	}
+	return (lst);
+}
+
+void	ft_lstadd_back(t_list **lst, t_list *new)
+{
+	t_list	*last;
+
+	if (!lst)
+		return ;
+	if (!*lst)
+	{
+		*lst = new;
+		return ;
+	}
+	last = ft_lstlast(*lst);
+	last->next = new;
+}
+
+void	ft_lstdelone(t_list *lst, void (*del)(void *))
+{
+	if (!lst || !del)
+		return ;
+	del(lst->content);
+	free(lst);
+}
+
+void	ft_lstclear(t_list **lst, void (*del)(void *))
+{
+	t_list	*temp;
+
+	if (!lst)
+		return ;
+	while (*lst != NULL)
+	{
+		temp = (*lst)->next;
+		ft_lstdelone(*lst, del);
+		(*lst) = temp;
+	}
+}
+
+static size_t	ft_strcount(char const *s, char c)
+{
+	size_t	n;
+	int		count;
+
+	count = 0;
+	n = 0;
+	while (*s != '\0')
+	{
+		if (*s == c)
+		{
+			if (count > 0)
+			{
+				n++;
+				count = 0;
+			}
+		}
+		else
+			count++;
+		s++;
+	}
+	if (count > 0)
+		n++;
+	return (n);
+}
+
+static size_t	ft_array_sorting(char const *s, char c)
+{
+	size_t	len;
+
+	len = 0;
+	while (*s != '\0')
+	{
+		if (*s == c)
+			return (len);
+		else
+			len++;
+		s++;
+	}
+	return (len);
+}
+
+static char	**ft_dealloc(char **str, int i)
+{
+	int	f;
+
+	f = 0;
+	while (f < i)
+		free(str[f++]);
+	free(str);
+	return (NULL);
+}
+
+static int	ft_check_null(size_t len, char const *s)
+{
+	if (s[len] == '\0')
+		return (0);
+	else
+		return (1);
+}
+
+char	**ft_split(char const *s, char c)
+{
+	char		**str;
+	int			i;
+	int			len;
+
+	i = 0;
+	if (!s)
+		return (NULL);
+	str = (char **)malloc((ft_strcount(s, c) + 1) * sizeof(char *));
+	if (!str)
+		return (NULL);
+	while (*s != '\0')
+	{
+		if (*s != c)
+		{
+			len = ft_array_sorting(s, c);
+			str[i++] = ft_substr(s, 0, len);
+			if (str[i - 1] == NULL)
+				return (ft_dealloc(str, i));
+			s += len + ft_check_null(len, s);
+		}
+		else
+			s++;
+	}
+	str[i] = NULL;
+	return (str);
+}
+
+size_t	ft_strlcpy(char *dst, const char *src, size_t size)
+{
+	size_t	i;
+
+	if (!dst || !src)
+		return (0);
+	if (!size)
+		return (ft_strlen(src));
+	i = 0;
+	while (src[i] != '\0' && (i < (size - 1)))
+	{
+		dst[i] = src[i];
+		i++;
+	}
+	dst[i] = '\0';
+	while (src[i] != '\0')
+	{
+		i++;
+	}
+	return (i);
+}
+
+void ft_add_env(char* str, t_list **env)
+{
+    // PERSON=LILIA
+    t_env *node;
+    int i;
+    char *key;
+    char *value;
+    
+    i = 0;
+    while (str[i] != '=')
+        i++;
+
+    node = malloc(sizeof(t_env));
+    key = malloc(i * sizeof(char));
+    value = malloc(ft_strlen(str + i + 1) * sizeof(char));
+    ft_strlcpy(key, str, i);
+    ft_strcpy(value, str + i + 1);
+    node->key = key;
+    node->value = value;
+
+    ft_lstadd_back(env, node);
+}
+
+void ft_del_env(t_env *env)
+{
+    free(env->key);
+    free(env->value);
+    free(env);
+}
+
+t_env *ft_find_env(char *key, t_list **env)
+{
+    t_list *temp;
+    t_env *tempenv;
+
+    temp = *env;
+
+    while (temp)
+    {
+        tempenv = (t_env *)temp->content;
+        if (ft_strcmp(tempenv->key, key) == 0)
+            return temp;
+    }
+
+    return NULL;
+}
+
+void ft_remove_env(char* key, t_list **env)
+{
+    t_list *temp;
+    
+    temp = ft_find_env(key, env);
+
+    if (temp)
+        ft_lstdelone(temp, ft_del_env);
+}
 
 int ft_strcmp(const char *s1, const char *s2)
 {
@@ -71,7 +326,7 @@ int ft_strcmp(const char *s1, const char *s2)
         return ((unsigned char)s1[i] - (unsigned char)s2[i]);
 }
 
-int ft_echo(t_token *args, int size)
+int ft_echo(t_token *args, int size, t_list **env)
 {
     int i = 1;
     int flag = 0;
@@ -94,7 +349,7 @@ int ft_echo(t_token *args, int size)
     return 1;
 }
 
-int ft_cd(t_token *tokens, int size)
+int ft_cd(t_token *tokens, int size, t_list **env)
 {
     static char olddir[256];
     char curdir[256];
@@ -104,7 +359,7 @@ int ft_cd(t_token *tokens, int size)
         ft_putstr_fd("bash: cd: No such file or directory\n", 1);
         return 0;
     }
-       
+
     if (getcwd(curdir, sizeof(curdir)) == NULL)
     {
         perror("getcwd() error");
@@ -146,6 +401,20 @@ int ft_check_n(char *str)
         return (1);
 
     return (0);
+}
+
+int ft_env(t_list **env)
+{
+    t_list *temp;
+
+    temp = *env;
+    while (temp)
+    {
+        ft_putstr_fd(((t_env *)temp->content)->key, 1);
+        write(1, "\n", 1);
+        temp = temp->next;
+    }
+    return (1);
 }
 
 size_t ft_strlen(const char *str)
@@ -211,52 +480,52 @@ int ft_find_closing_brace(t_token *tokens, int size)
 	}
 }
 
-int ft_and_if(t_token *tokens, int size, int i)
+int ft_and_if(t_token *tokens, int size, int i, t_list **env)
 {
 	int left;
 	
-	left = ft_exec(tokens, i);
+	left = ft_exec(tokens, i, env);
 	if (left == 1)
 	{
 		int right;
 		
-		right = ft_exec(tokens + i + 1, size - (i + 1));
+		right = ft_exec(tokens + i + 1, size - (i + 1), env);
 		return (left && right);
 	}
 
 	return (0);
 }
 
-int ft_or_if(t_token *tokens, int size, int i)
+int ft_or_if(t_token *tokens, int size, int i, t_list **env)
 {
 	int left;
 	
-	left = ft_exec(tokens, i);
+	left = ft_exec(tokens, i, env);
 	if (left == 0)
 	{
 		int right;
 		
-		right = ft_exec(tokens + i + 1, size - (i + 1));
+		right = ft_exec(tokens + i + 1, size - (i + 1), env);
 		return (left || right);
 	}
 
 	return (1);
 }
 
-int ft_pipe_exec(t_token *tokens, int size, int fd, int p1, int p2)
+int ft_pipe_exec(t_token *tokens, int size, int fd, int* pipe, t_list **env)
 {
 	int fd_copy;
 	
 	fd_copy = dup(fd);
-	close(p1);
-	dup2(p2, fd);
-	ft_exec(tokens, size);
-	close(p2);
+	close(pipe[0]);
+	dup2(pipe[1], fd);
+	ft_exec(tokens, size, env);
+	close(pipe[1]);
 	dup2(fd_copy, fd);
 	close(fd_copy);
 }
 
-int ft_pipe(t_token *tokens, int size, int i)
+int ft_pipe(t_token *tokens, int size, int i, t_list **env)
 {
 	int outcopy;
 	int fd[2];
@@ -270,12 +539,12 @@ int ft_pipe(t_token *tokens, int size, int i)
 		return (2);
 
 	if (id == 0)
-		ft_pipe_exec(tokens, i, 1, fd[0], fd[1]);
+		ft_pipe_exec(tokens, i, 1, fd, env);
 	else
     {
         int status;
 
-		ft_pipe_exec(tokens + i + 1, size - (i + 1), 0, fd[1], fd[0]);
+		ft_pipe_exec(tokens + i + 1, size - (i + 1), 0, fd, env);
         wait(&status);
         return status != 0;
     }
@@ -283,7 +552,7 @@ int ft_pipe(t_token *tokens, int size, int i)
 	return (1);
 }
 
-int ft_great(t_token *tokens, int size, int i)
+int ft_great(t_token *tokens, int size, int i, t_list **env)
 {
 	int outcopy;
 	int fd;
@@ -292,7 +561,7 @@ int ft_great(t_token *tokens, int size, int i)
 	// todo: what if it's not a file
 	fd = open(tokens[i + 1].str, O_CREAT | O_WRONLY);
 	dup2(fd, 1);
-	ft_exec(tokens, i);
+	ft_exec(tokens, i, env);
 	close(fd);
 	dup2(outcopy, 1);
 	close(outcopy);
@@ -300,7 +569,7 @@ int ft_great(t_token *tokens, int size, int i)
     return (1);
 }
 
-int ft_dgreat(t_token *tokens, int size, int i)
+int ft_dgreat(t_token *tokens, int size, int i, t_list **env)
 {
 	int outcopy;
 	int fd;
@@ -308,7 +577,7 @@ int ft_dgreat(t_token *tokens, int size, int i)
 	outcopy = dup(1);
 	fd = open(tokens[i + 1].str, O_CREAT | O_WRONLY | O_APPEND);
 	dup2(fd, 1);
-	ft_exec(tokens, i);
+	ft_exec(tokens, i, env);
 	close(fd);
 	dup2(outcopy, 1);
 	close(outcopy);
@@ -316,7 +585,7 @@ int ft_dgreat(t_token *tokens, int size, int i)
     return (1);
 }
 
-int ft_less(t_token *tokens, int size, int i)
+int ft_less(t_token *tokens, int size, int i, t_list **env)
 {
 	int outcopy;
 	int fd;
@@ -324,7 +593,7 @@ int ft_less(t_token *tokens, int size, int i)
 	outcopy = dup(1);
 	fd = open(tokens[0].str, O_RDONLY);
 	dup2(fd, 1);
-	ft_exec(tokens + i + 1, size - (i + 1));
+	ft_exec(tokens + i + 1, size - (i + 1), env);
 	close(fd);
 	dup2(outcopy, 1);
 	close(outcopy);
@@ -376,7 +645,7 @@ char *ft_collect_input(char *end)
 	return (input);
 }
 
-int ft_dless(t_token *tokens, int size, int i)
+int ft_dless(t_token *tokens, int size, int i, t_list **env)
 {
 	int fd;
 	char *end;
@@ -392,7 +661,7 @@ int ft_dless(t_token *tokens, int size, int i)
 	return (1);
 }
 
-int ft_check_operators(t_token *tokens, int size)
+int ft_check_operators(t_token *tokens, int size, t_list **env)
 {
     int i = 0;
 
@@ -402,12 +671,12 @@ int ft_check_operators(t_token *tokens, int size)
         {
             i = ft_find_closing_brace(tokens + i, size - i);
             if (i == size - 1)
-                return (ft_exec(tokens + 1, size - 2));
+                return (ft_exec(tokens + 1, size - 2, env));
         }
         else if (tokens[i].type == AND_IF)
-			return (ft_and_if(tokens, size, i));
+			return (ft_and_if(tokens, size, i, env));
     	else if (tokens[i].type == OR_IF)
-			return (ft_or_if(tokens, size, i));
+			return (ft_or_if(tokens, size, i, env));
 
         i++;
     }
@@ -415,7 +684,7 @@ int ft_check_operators(t_token *tokens, int size)
 	return (-1);
 }
 
-int ft_check_joins(t_token *tokens, int size)
+int ft_check_joins(t_token *tokens, int size, t_list **env)
 {
 	int i;
 
@@ -423,15 +692,15 @@ int ft_check_joins(t_token *tokens, int size)
     while (i < size)
     {
         if (tokens[i].type == PIPE)
-			return (ft_pipe(tokens, size, i));
+			return (ft_pipe(tokens, size, i, env));
         if (tokens[i].type == GREAT)
-			return (ft_great(tokens, size, i));
+			return (ft_great(tokens, size, i, env));
         if (tokens[i].type == DGREAT)
-			return (ft_dgreat(tokens, size, i));
+			return (ft_dgreat(tokens, size, i, env));
         if (tokens[i].type == LESS)
-			return (ft_less(tokens, size, i));
+			return (ft_less(tokens, size, i, env));
         if (tokens[i].type == DLESS)
-			return (ft_dless(tokens, size, i));
+			return (ft_dless(tokens, size, i, env));
 
         i++;
     }
@@ -439,7 +708,7 @@ int ft_check_joins(t_token *tokens, int size)
 	return (-1);
 }
 
-int ft_run_shell(t_token *tokens, int size)
+int ft_run_shell(t_token *tokens, int size, t_list **env)
 {
     char **args;
 	int a;
@@ -466,44 +735,47 @@ int ft_run_shell(t_token *tokens, int size)
     }
 }
 
-int ft_run_command(t_token *tokens, int size)
+int ft_run_command(t_token *tokens, int size, t_list **env)
 {
     if (ft_strcmp(tokens[0].str, "echo") == 0)
-        return ft_echo(tokens, size);
+        return ft_echo(tokens, size, env);
 
     if (ft_strcmp(tokens[0].str, "cd") == 0)
-        return ft_cd(tokens, size);
+        return ft_cd(tokens, size, env);
 
     if (ft_strcmp(tokens[0].str, "pwd") == 0)
         return ft_pwd();
 
-	return ft_run_shell(tokens, size);
+    if (ft_strcmp(tokens[0].str, "env") == 0)
+        return ft_env(env);
+
+	return ft_run_shell(tokens, size, env);
 }
 
-int ft_exec(t_token *tokens, int size)
+int ft_exec(t_token *tokens, int size, t_list **env)
 {
 	int result;
 
-	result = ft_check_operators(tokens, size);
+	result = ft_check_operators(tokens, size, env);
 	if (result != -1)
 		return result;
 
-	result = ft_check_joins(tokens, size);
+	result = ft_check_joins(tokens, size, env);
 	if (result != -1)
 		return result;
 
-	result = ft_run_command(tokens, size);
+	result = ft_run_command(tokens, size, env);
 	if (result != -1)
 		return result;
 
     return 0;
 }
 
-int main(void)
+int main(int argc, char **argv, t_list **env)
 {
     t_token token1;
     token1.type = WORD;
-    token1.str = "cd";
+    token1.str = "env";
     t_token token2;
     token2.type = WORD;
     token2.str = "..";
@@ -539,9 +811,9 @@ int main(void)
     token14.type = WORD;
     token14.str = "pwd";
 
-    t_token tokens[] = { token1, token2, token3, token4, token5, token6, token7, token8, token9, token10, token11, token12, token13, token14 };
+    t_token tokens[] = { token1 }; //, token2, token3, token4, token5, token6, token7, token8, token9, token10, token11, token12, token13, token14 };
 
-    ft_exec(tokens, 14);
+    ft_exec(tokens, 1, env);
     return (0);
 }
 
