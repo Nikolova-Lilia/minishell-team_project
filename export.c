@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* structures created for testing purposes only
 typedef struct s_list
 {
     void *content;
@@ -15,22 +16,22 @@ typedef struct s_env
 
 int     ft_export(int argc, char **argv, t_list **env);
 int     ft_export_env_print(t_list *env);
+t_env   *ft_split_env(char *env);
 int     ft_find_and_replace(t_list *env, t_env *node_to_check);
-int     ft_strcmp(const char *s1, const char *s2); //libft function
 t_list	*ft_lstnew(void *content); //libft function
 void	ft_lstadd_back(t_list **lst, t_list *new); //libft function
 void    ft_del_env_node(void *env_node);
-t_env   *ft_split_env(char *env);
+size_t  ft_strlen(const char *str); //libft function
+size_t	ft_strlcpy(char *dst, const char *src, size_t size); //libft function
+int     ft_strcmp(const char *s1, const char *s2); //libft function
+char	*ft_strtrim(char const *s1, char const *set);
+char	*ft_strchr(const char *s, int c); //libft function
+t_list	*ft_lstlast(t_list *lst); //libft function
 
-
+//needed for testing only
 void	ft_lstclear(t_list **lst, void (*del)(void *)); //testing only
 void	ft_lstdelone(t_list *lst, void (*del)(void *)); //testing only
-size_t  ft_strlen(const char *str);
-size_t	ft_strlcpy(char *dst, const char *src, size_t size);
-char	*ft_strtrim(char const *s1, char const *set);
-char	*ft_strchr(const char *s, int c); //testing only
-void	*ft_calloc(size_t nmemb, size_t size);
-t_list	*ft_lstlast(t_list *lst);
+*/
 
 
 int     ft_export(int argc, char **argv, t_list **env)
@@ -77,46 +78,8 @@ int     ft_export_env_print(t_list *env)
     }
     return (1);
 }
-int     ft_strcmp(const char *s1, const char *s2) //libft function
-{
-    size_t i;
 
-    i = 0;
-    while (s1[i] != 0 && s2[i] != 0 && s1[i] == s2[i])
-    {
-        i++;
-    }
-    if (s1[i] == s2[i])
-        return (0);
-    else
-        return ((unsigned char)s1[i] - (unsigned char)s2[i]);
-}
-int     ft_find_and_replace(t_list *env, t_env *node_to_check)
-{
-    t_env *node_cont;
-
-    if (!env)
-        return (0);
-
-    while (env != NULL)
-    {
-        node_cont = (t_env *)env->content;
-        if (ft_strcmp(node_cont->key,node_to_check->key) == 0)
-        {
-            free(node_cont->value);
-            node_cont->value = node_to_check->value;
-            free(node_to_check->key);
-            free(node_to_check);
-            return (1);
-        }
-        env = env->next;
-    }
-
-    return (0);
-}
-
-//below helper functions for checking purpuses only
-t_env   *ft_split_env(char *env) //testing only
+t_env   *ft_split_env(char *env)
 {
     int i;
     char *key;
@@ -154,35 +117,32 @@ t_env   *ft_split_env(char *env) //testing only
 
     return node;
 }
-void	ft_lstclear(t_list **lst, void (*del)(void *)) //testing only
-{
-	t_list	*temp;
 
-	if (!lst)
-		return ;
-	while (*lst != NULL)
-	{
-		temp = (*lst)->next;
-		ft_lstdelone(*lst, del);
-		(*lst) = temp;
-	}
-}
-void	ft_lstdelone(t_list *lst, void (*del)(void *)) //testing only
+int     ft_find_and_replace(t_list *env, t_env *node_to_check)
 {
-	if (!lst || !del)
-		return ;
-	del(lst->content);
-	free(lst);
+    t_env *node_cont;
+
+    if (!env)
+        return (0);
+
+    while (env != NULL)
+    {
+        node_cont = (t_env *)env->content;
+        if (ft_strcmp(node_cont->key,node_to_check->key) == 0)
+        {
+            free(node_cont->value);
+            node_cont->value = node_to_check->value;
+            free(node_to_check->key);
+            free(node_to_check);
+            return (1);
+        }
+        env = env->next;
+    }
+
+    return (0);
 }
-void    ft_del_env_node(void *env_node) //testing only
-{
-    t_env *node;
-    node = (t_env *)env_node;
-    free(node->key);
-    free(node->value);
-    free(node);
-}
-t_list	*ft_lstnew(void *content) //testing only
+
+t_list	*ft_lstnew(void *content)
 {
 	t_list	*node;
 
@@ -193,7 +153,8 @@ t_list	*ft_lstnew(void *content) //testing only
 	node->next = NULL;
 	return (node);
 }
-void	ft_lstadd_back(t_list **lst, t_list *new) //testing only
+
+void	ft_lstadd_back(t_list **lst, t_list *new)
 {
 	t_list	*last;
 
@@ -207,18 +168,17 @@ void	ft_lstadd_back(t_list **lst, t_list *new) //testing only
 	last = ft_lstlast(*lst);
 	last->next = new;
 }
-size_t ft_strlen(const char *str) //testing only
-{
-    unsigned int i;
 
-    i = 0;
-    while (str[i] != '\0')
-    {
-        i++;
-    }
-    return ((size_t)i);
+void    ft_del_env_node(void *env_node)
+{
+    t_env *node;
+    node = (t_env *)env_node;
+    free(node->key);
+    free(node->value);
+    free(node);
 }
-size_t	ft_strlcpy(char *dst, const char *src, size_t size) //testing only
+
+size_t	ft_strlcpy(char *dst, const char *src, size_t size) //libft function
 {
 	size_t	i;
 
@@ -239,7 +199,35 @@ size_t	ft_strlcpy(char *dst, const char *src, size_t size) //testing only
 	}
 	return (i);
 }
-char	*ft_strtrim(char const *s1, char const *set)
+
+int     ft_strcmp(const char *s1, const char *s2) //libft function
+{
+    size_t i;
+
+    i = 0;
+    while (s1[i] != 0 && s2[i] != 0 && s1[i] == s2[i])
+    {
+        i++;
+    }
+    if (s1[i] == s2[i])
+        return (0);
+    else
+        return ((unsigned char)s1[i] - (unsigned char)s2[i]);
+}
+
+size_t ft_strlen(const char *str) //libft function
+{
+    unsigned int i;
+
+    i = 0;
+    while (str[i] != '\0')
+    {
+        i++;
+    }
+    return ((size_t)i);
+}
+
+char	*ft_strtrim(char const *s1, char const *set) //libft function
 {
 	char	*p;
 	size_t	lens1;
@@ -266,7 +254,8 @@ char	*ft_strtrim(char const *s1, char const *set)
 		ft_strlcpy(p, &s1[start], end - start + 2);
 	return (p);
 }
-char	*ft_strchr(const char *s, int c) //testing only
+
+char	*ft_strchr(const char *s, int c) //libft function
 {
 	unsigned char	uc;
 
@@ -281,6 +270,40 @@ char	*ft_strchr(const char *s, int c) //testing only
 		return ((char *)s);
 	return (NULL);
 }
+
+t_list	*ft_lstlast(t_list *lst) //libft function
+{
+	while (lst != NULL && lst->next != NULL)
+	{
+		lst = lst->next;
+	}
+	return (lst);
+}
+
+
+
+/* testing purposes only
+void	ft_lstclear(t_list **lst, void (*del)(void *)) //testing only
+{
+	t_list	*temp;
+
+	if (!lst)
+		return ;
+	while (*lst != NULL)
+	{
+		temp = (*lst)->next;
+		ft_lstdelone(*lst, del);
+		(*lst) = temp;
+	}
+}
+void	ft_lstdelone(t_list *lst, void (*del)(void *)) //testing only
+{
+	if (!lst || !del)
+		return ;
+	del(lst->content);
+	free(lst);
+}
+
 void	*ft_calloc(size_t nmemb, size_t size) //testing only
 {
 	size_t	i;
@@ -306,14 +329,7 @@ void	*ft_calloc(size_t nmemb, size_t size) //testing only
 	}
 	return ((void *)q);
 }
-t_list	*ft_lstlast(t_list *lst) //testing only
-{
-	while (lst != NULL && lst->next != NULL)
-	{
-		lst = lst->next;
-	}
-	return (lst);
-}
+
 void    main(int argc, char **argv, char **env) //testing only
 {
     t_list *head;
@@ -350,3 +366,4 @@ void    main(int argc, char **argv, char **env) //testing only
     ft_export(argc, argv, &head);
     ft_export(1,NULL, &head);
 }
+*/

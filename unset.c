@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+/*
 typedef struct s_list
 {
     void *content;
@@ -18,7 +18,7 @@ int     ft_find_and_remove(t_list **env, char *key);
 void    ft_free_node(t_env * node);
 int     ft_strcmp(const char *s1, const char *s2); //libft function
 
-/*
+
 void	ft_lstclear(t_list **lst, void (*del)(void *)); //testing only
 void	ft_lstdelone(t_list *lst, void (*del)(void *)); //testing only
 size_t  ft_strlen(const char *str); //testing only
