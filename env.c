@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* structures for testing purposes only
 typedef struct s_list
 {
     void *content;
@@ -12,7 +13,7 @@ typedef struct s_env
     char *key;
     char *value;
 } t_env;
-
+*/
 int ft_env(int argc, t_list *env);
 int ft_env_exec(t_list *env);
 
